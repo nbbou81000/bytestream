@@ -644,7 +644,7 @@ def main():
     print("🤖 ByteStream Generator démarré")
     genai.configure(api_key=GEMINI_API_KEY)
     model = genai.GenerativeModel(
-        "gemini-2.0-flash",
+        "gemini-1.5-flash",
         system_instruction=SYSTEM_PROMPT
     )
 
