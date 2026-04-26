@@ -29,7 +29,10 @@ jobs:
           cache: 'pip'
 
       - name: 📦 Installer les dépendances
-        run: pip install feedparser google-generativeai
+        run: |
+          pip install --upgrade pip
+          pip uninstall -y google-generativeai || true
+          pip install feedparser google-genai
 
       - name: 🤖 Générer les articles
         env:
