@@ -1,0 +1,46 @@
+name: 🤖 Génération automatique articles
+
+on:
+  schedule:
+    # Toutes les 6 heures (4x/jour = 20 articles/jour, bien dans le free tier Gemini)
+    - cron: '0 6,12,18,0 * * *'
+  workflow_dispatch:   # Déclenchement manuel possible depuis l'UI GitHub
+  push:
+    branches: [main]   # Génération au premier push pour tester
+
+permissions:
+  contents: write      # Nécessaire pour commit le HTML généré
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: 📥 Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: 🐍 Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: 'pip'
+
+      - name: 📦 Installer les dépendances
+        run: pip install feedparser google-generativeai
+
+      - name: 🤖 Générer les articles
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        run: python generate.py
+
+      - name: 📤 Commit et push
+        run: |
+          git config --global user.name  "ByteStream Bot"
+          git config --global user.email "bot@bytestream.local"
+          git add index.html articles.json
+          # Ne commite que s'il y a des changements
+          git diff --staged --quiet || git commit -m "🤖 Mise à jour articles $(date +'%d/%m/%Y %H:%M')"
+          git push
